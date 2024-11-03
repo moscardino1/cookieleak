@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CookieLeak - Website Privacy Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .cookie-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .cookie-table th, .cookie-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .risk-high { color: #dc3545; }
+        .risk-medium { color: #ffc107; }
+        .risk-low { color: #28a745; }
+        #error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CookieLeak</h1>
+            <p>Discover what websites know about you through cookies</p>
+        </div>
+        
+        <div class="form-group">
+            <input type="text" id="url-input" placeholder="Enter website URL (e.g., example.com)">
+            <button onclick="analyzeSite()">Analyze</button>
+        </div>
+        
+        <div id="error-message"></div>
+        
+        <div id="results" style="display: none;">
+            <div class="stats">
+                <div class="stat-box">
+                    <h3>Total Cookies</h3>
+                    <div id="total-cookies">0</div>
+                </div>
+                <div class="stat-box">
+                    <h3>High Risk</h3>
+                    <div id="high-risk" class="risk-high">0</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Medium Risk</h3>
+                    <div id="medium-risk" class="risk-medium">0</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Low Risk</h3>
+                    <div id="low-risk" class="risk-low">0</div>
+                </div>
+            </div>
+            
+            <table class="cookie-table">
+                <thead>
+                    <tr>
+                        <th>Cookie Name</th>
+                        <th>Domain</th>
+                        <th>Expiration</th>
+                        <th>Secure</th>
+                        <th>Risk Level</th>
+                    </tr>
+                </thead>
+                <tbody id="cookie-list">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function analyzeSite() {
+            const url = document.getElementById('url-input').value;
+            const errorMessage = document.getElementById('error-message');
+            const results = document.getElementById('results');
+            
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `url=${encodeURIComponent(url)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                    results.style.display = 'none';
+                    return;
+                }
+                
+                errorMessage.style.display = 'none';
+                results.style.display = 'block';
+                
+                // Update stats
+                document.getElementById('total-cookies').textContent = data.stats.total_cookies;
+                document.getElementById('high-risk').textContent = data.stats.high_risk;
+                document.getElementById('medium-risk').textContent = data.stats.medium_risk;
+                document.getElementById('low-risk').textContent = data.stats.low_risk;
+                
+                // Update cookie list
+                const cookieList = document.getElementById('cookie-list');
+                cookieList.innerHTML = '';
+                
+                data.cookies.forEach(cookie => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${cookie.name}</td>
+                        <td>${cookie.domain}</td>
+                        <td>${cookie.expires}</td>
+                        <td>${cookie.secure ? 'Yes' : 'No'}</td>
+                        <td class="risk-${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</td>
+                    `;
+                    cookieList.appendChild(row);
+                });
+            })
+            .catch(error => {
+                errorMessage.textContent = 'An error occurred while analyzing the website.';
+                errorMessage.style.display = 'block';
+                results.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>
