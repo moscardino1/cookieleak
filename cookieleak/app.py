@@ -1,15 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import pandas as pd
-from urllib.parse import urlparse
-import http.cookiejar
-import urllib.request
-import browser_cookie3
+
 import json
 from datetime import datetime
 from flask import Flask, request, jsonify
 import platform
 import json
-import uuid
 import datetime
 import requests
 import user_agents
