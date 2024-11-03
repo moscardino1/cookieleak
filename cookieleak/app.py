@@ -14,6 +14,7 @@ import socket
 import psutil
 import screeninfo
 from http.cookies import SimpleCookie
+from constants import COOKIE_CATEGORIES, COOKIE_PURPOSES
 
 app = Flask(__name__)
 
@@ -263,6 +264,29 @@ def get_real_user_data(request_headers):
         'browser_capabilities': browser_capabilities
     }
 
+def categorize_cookie(name):
+    """Categorize cookie based on its name"""
+    name = name.lower()
+    
+    for category, info in COOKIE_CATEGORIES.items():
+        if any(pattern in name for pattern in info['patterns']):
+            return category
+    return 'other'
+
+def analyze_cookie_purpose(name, category):
+    """Get cookie purpose based on its name and category"""
+    name = name.lower()
+    
+    if category in COOKIE_PURPOSES:
+        # Check for specific pattern matches first
+        for pattern, purpose in COOKIE_PURPOSES[category].items():
+            if pattern in name and pattern != 'default':
+                return purpose
+        # Return default purpose for the category
+        return COOKIE_PURPOSES[category]['default']
+    
+    return 'General website functionality'
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -271,12 +295,7 @@ def home():
 def analyze():
     try:
         url = request.form.get('url', '')
-        print(f"Received URL: {url}")
-        
-        url = url.strip().lower()
-        url = url.replace('http://', '').replace('https://', '')
-        url = url.split('/')[0]
-        url = f'https://{url}'
+        url = f'https://{url.strip().lower().replace("http://", "").replace("https://", "").split("/")[0]}'
         
         session = requests.Session()
         response = session.get(url, 
@@ -285,24 +304,30 @@ def analyze():
                            allow_redirects=True)
         
         cookies_data = []
-        
-        # Process both session cookies and response cookies
         all_cookies = {**session.cookies.get_dict(), **response.cookies.get_dict()}
         
         for name, value in all_cookies.items():
+            category = categorize_cookie(name)
             cookie_info = {
                 'name': name,
-                'value': value,  # Show the actual value
+                'value': value,
                 'domain': response.url,
                 'expires': 'Session',
+                'category': category,
                 'risk_level': analyze_cookie_risk(name, value),
-                'purpose': analyze_cookie_purpose(name, value),
+                'purpose': analyze_cookie_purpose(name, category),
                 'data_collected': analyze_cookie_content(name, value)
             }
             cookies_data.append(cookie_info)
         
+        # Group cookies by category
+        categorized_cookies = {}
+        for category in [*COOKIE_CATEGORIES.keys(), 'other']:
+            categorized_cookies[category] = [c for c in cookies_data if c['category'] == category]
+        
         return jsonify({
-            'cookies': cookies_data,
+            'cookies': categorized_cookies,
+            'categories': COOKIE_CATEGORIES,
             'stats': {
                 'total_cookies': len(cookies_data),
                 'high_risk': len([c for c in cookies_data if c['risk_level'] == 'High']),
@@ -325,26 +350,6 @@ def analyze_cookie_risk(name, value):
     if any(indicator in name for indicator in medium_risk_indicators):
         return 'Medium'
     return 'Low'
-
-def analyze_cookie_purpose(name, value):
-    """Analyze what the cookie is used for"""
-    name = name.lower()
-    purposes = {
-        'id': 'Identifies you uniquely across sessions',
-        'session': 'Maintains your current session state',
-        'auth': 'Keeps you logged in',
-        'pref': 'Stores your preferences',
-        'theme': 'Remembers your visual settings',
-        'lang': 'Stores your language preference',
-        'track': 'Tracks your behavior on the site',
-        'analytic': 'Analyzes how you use the site',
-        'ads': 'Used for targeted advertising'
-    }
-    
-    for key, purpose in purposes.items():
-        if key in name:
-            return purpose
-    return 'General website functionality'
 
 def analyze_cookie_content(name, value):
     """Analyze what information is stored in the cookie"""

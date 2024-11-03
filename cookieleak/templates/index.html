@@ -179,32 +179,7 @@
                 
                 results.style.display = 'block';
                 
-                // Update stats
-                document.getElementById('total-cookies').textContent = data.stats.total_cookies;
-                document.getElementById('high-risk').textContent = data.stats.high_risk;
-                document.getElementById('medium-risk').textContent = data.stats.medium_risk;
-                document.getElementById('low-risk').textContent = data.stats.low_risk;
-                
-                // Clear all tables
-                document.querySelectorAll('.cookie-table tbody').forEach(tbody => tbody.innerHTML = '');
-                
-                // Display cookies
-                data.cookies.forEach(cookie => {
-                    const tableRow = `
-                        <tr class="risk-${cookie.risk_level.toLowerCase()}">
-                            <td>${cookie.name}</td>
-                            <td><code>${cookie.value}</code></td>
-                            <td>${cookie.purpose}</td>
-                            <td><span class="risk-tag ${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</span></td>
-                            <td>${cookie.data_collected.join('<br>')}</td>
-                        </tr>
-                    `;
-                    
-                    document.querySelector('#marketing-cookies-table tbody').innerHTML += tableRow;
-                });
-                
-                // Show the marketing cookies section
-                document.getElementById('marketing-cookies').style.display = 'block';
+                displayCookies(data);
             })
             .catch(error => {
                 document.body.style.cursor = 'default';
@@ -214,72 +189,46 @@
             });
         }
 
-        function categorizeCookie(name, domain) {
-            // Common patterns for different cookie types
-            const patterns = {
-                essential: [
-                    'csrf', 'session', 'token', 'auth', 'security', 'xsrf',
-                    'cookie_consent', 'gdpr'
-                ],
-                tracking: [
-                    'ga', 'analytics', 'track', 'visitor', '_gid', '_gat',
-                    'utm_', 'pixel', 'beacon'
-                ],
-                marketing: [
-                    'ad', 'campaign', 'promo', 'marketing', 'doubleclick',
-                    'facebook', 'fb', 'twitter', 'linkedin'
-                ]
-            };
-
-            name = name.toLowerCase();
+        function displayCookies(data) {
+            // Update stats
+            document.getElementById('total-cookies').textContent = data.stats.total_cookies;
+            document.getElementById('high-risk').textContent = data.stats.high_risk;
+            document.getElementById('medium-risk').textContent = data.stats.medium_risk;
+            document.getElementById('low-risk').textContent = data.stats.low_risk;
             
-            for (const [category, terms] of Object.entries(patterns)) {
-                if (terms.some(term => name.includes(term))) {
-                    return category;
-                }
-            }
+            // Clear all tables
+            document.querySelectorAll('.cookie-table tbody').forEach(tbody => tbody.innerHTML = '');
             
-            return 'other';
-        }
-
-        function getCookiePurpose(name, domain) {
-            const category = categorizeCookie(name, domain);
-            const purposes = {
-                essential: {
-                    csrf: 'Protects against cyber attacks',
-                    session: 'Keeps you logged in',
-                    token: 'Maintains your secure session',
-                    security: 'Protects your browsing session',
-                    default: 'Helps the website function properly'
-                },
-                tracking: {
-                    ga: 'Tracks how you use the website',
-                    analytics: 'Monitors visitor behavior',
-                    default: 'Monitors your activity on the site'
-                },
-                marketing: {
-                    ad: 'Helps show relevant advertisements',
-                    campaign: 'Tracks marketing effectiveness',
-                    default: 'Used for marketing purposes'
-                },
-                other: {
-                    default: 'Stores website preferences'
+            // Display cookies by category
+            Object.entries(data.cookies).forEach(([category, cookies]) => {
+                const categoryInfo = data.categories[category] || {
+                    icon: '❓',
+                    description: 'Miscellaneous purposes'
+                };
+                
+                const sectionId = `${category}-cookies`;
+                const section = document.getElementById(sectionId);
+                
+                if (cookies.length > 0) {
+                    section.style.display = 'block';
+                    const tbody = section.querySelector('tbody');
+                    
+                    cookies.forEach(cookie => {
+                        const row = `
+                            <tr class="risk-${cookie.risk_level.toLowerCase()}">
+                                <td>${cookie.name}</td>
+                                <td><code>${cookie.value}</code></td>
+                                <td>${cookie.purpose}</td>
+                                <td><span class="risk-tag ${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</span></td>
+                                <td>${cookie.data_collected.join('<br>')}</td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    section.style.display = 'none';
                 }
-            };
-
-            const categoryPurposes = purposes[category] || purposes.other;
-            const purpose = Object.entries(categoryPurposes).find(([key]) => 
-                name.includes(key))?.[1] || categoryPurposes.default;
-
-            return {
-                category,
-                purpose,
-                whatItKnows: getWhatItKnows(category, name)
-            };
-        }
-
-        function getWhatItKnows(cookie) {
-            return cookie.data_collected.join('<br>');
+            });
         }
 
         function getRiskTag(level) {
