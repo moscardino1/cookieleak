@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CookieLeak - Website Privacy Analyzer</title>
+    <title>CookieLeak - What do websites know about you?</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -9,113 +9,264 @@
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
+            line-height: 1.6;
         }
         .container {
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
+            padding: 30px;
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .header {
             text-align: center;
             margin-bottom: 30px;
         }
-        .form-group {
+        .explanation {
+            background-color: #e8f4ff;
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
         input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 70%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-right: 10px;
         }
         button {
             background-color: #007bff;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 16px;
         }
         .stats {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             margin: 20px 0;
         }
         .stat-box {
             background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
+            padding: 20px;
+            border-radius: 8px;
             text-align: center;
+        }
+        .category-section {
+            margin: 30px 0;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .category-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
         .cookie-table {
             width: 100%;
             border-collapse: collapse;
+            margin: 10px 0;
+            background-color: white;
+        }
+        .cookie-table th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+        }
+        .cookie-table td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+        .risk-high { 
+            border-left: 4px solid #dc3545;
+        }
+        .risk-medium { 
+            border-left: 4px solid #ffc107;
+        }
+        .risk-low { 
+            border-left: 4px solid #28a745;
+        }
+        .risk-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .risk-tag.high {
+            background-color: #dc3545;
+            color: white;
+        }
+        .risk-tag.medium {
+            background-color: #ffc107;
+            color: black;
+        }
+        .risk-tag.low {
+            background-color: #28a745;
+            color: white;
+        }
+        .privacy-tip {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
             margin-top: 20px;
         }
-        .cookie-table th, .cookie-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
+        .category-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
         }
-        .risk-high { color: #dc3545; }
-        .risk-medium { color: #ffc107; }
-        .risk-low { color: #28a745; }
-        #error-message {
-            color: #dc3545;
-            margin-top: 10px;
-            display: none;
+        .cookie-table code {
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+            word-break: break-all;
+            display: block;
+            max-height: 100px;
+            overflow-y: auto;
         }
     </style>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>CookieLeak</h1>
-            <p>Discover what websites know about you through cookies</p>
+            <h2>What do websites know about you?</h2>
         </div>
         
+        <div class="explanation">
+            <h3>👋 What is this tool?</h3>
+            <p>This tool helps you understand what information websites collect about you through "cookies" - small pieces of data stored on your computer when you visit websites.</p>
+        </div>
+
         <div class="form-group">
-            <input type="text" id="url-input" placeholder="Enter website URL (e.g., example.com)">
-            <button onclick="analyzeSite()">Analyze</button>
+            <input type="text" id="url-input" placeholder="Type a website address (like example.com)">
+            <button onclick="analyzeSite()">Check This Website</button>
         </div>
         
-        <div id="error-message"></div>
+        <div id="error-message" style="display: none; color: red; background-color: #ffe6e6; padding: 10px; border-radius: 5px; margin: 10px 0;"></div>
         
         <div id="results" style="display: none;">
             <div class="stats">
                 <div class="stat-box">
-                    <h3>Total Cookies</h3>
-                    <div id="total-cookies">0</div>
+                    <h3>📊 Total Cookies Found</h3>
+                    <div id="total-cookies" style="font-size: 24px; font-weight: bold;">0</div>
+                    <p>Different pieces of information being collected</p>
                 </div>
                 <div class="stat-box">
-                    <h3>High Risk</h3>
-                    <div id="high-risk" class="risk-high">0</div>
-                </div>
-                <div class="stat-box">
-                    <h3>Medium Risk</h3>
-                    <div id="medium-risk" class="risk-medium">0</div>
-                </div>
-                <div class="stat-box">
-                    <h3>Low Risk</h3>
-                    <div id="low-risk" class="risk-low">0</div>
+                    <h3>🚨 Privacy Concerns</h3>
+                    <div>
+                        <p><span id="high-risk" class="risk-high">0</span> High Risk</p>
+                        <p><span id="medium-risk" class="risk-medium">0</span> Medium Risk</p>
+                        <p><span id="low-risk" class="risk-low">0</span> Low Risk</p>
+                    </div>
                 </div>
             </div>
-            
-            <table class="cookie-table">
-                <thead>
-                    <tr>
-                        <th>Cookie Name</th>
-                        <th>Domain</th>
-                        <th>Expiration</th>
-                        <th>Secure</th>
-                        <th>Risk Level</th>
-                    </tr>
-                </thead>
-                <tbody id="cookie-list">
-                </tbody>
-            </table>
+
+            <!-- Essential Cookies Section -->
+            <div id="essential-cookies" class="category-section">
+                <h3 class="category-title">
+                    <span class="category-icon">🔧</span> Essential Cookies
+                    <small style="font-weight: normal; color: #666;">(Required for the website to work)</small>
+                </h3>
+                <table class="cookie-table" id="essential-cookies-table">
+                    <thead>
+                        <tr>
+                            <th>Cookie Name</th>
+                            <th>Purpose</th>
+                            <th>Duration</th>
+                            <th>Risk Level</th>
+                            <th>Data Collected</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Tracking Cookies Section -->
+            <div id="tracking-cookies" class="category-section">
+                <h3 class="category-title">
+                    <span class="category-icon">👀</span> Tracking Cookies
+                    <small style="font-weight: normal; color: #666;">(Monitor your behavior)</small>
+                </h3>
+                <table class="cookie-table" id="tracking-cookies-table">
+                    <thead>
+                        <tr>
+                            <th>Cookie Name</th>
+                            <th>Purpose</th>
+                            <th>Duration</th>
+                            <th>Risk Level</th>
+                            <th>Data Collected</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Marketing Cookies Section -->
+            <div id="marketing-cookies" class="category-section">
+                <h3 class="category-title">
+                    <span class="category-icon">🎯</span> Marketing Cookies
+                    <small style="font-weight: normal; color: #666;">(Used for advertisements)</small>
+                </h3>
+                <table class="cookie-table" id="marketing-cookies-table">
+                    <thead>
+                        <tr>
+                            <th>Cookie Name</th>
+                            <th>Actual Value</th>
+                            <th>Purpose</th>
+                            <th>Risk Level</th>
+                            <th>Data Analysis</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Other Cookies Section -->
+            <div id="other-cookies" class="category-section">
+                <h3 class="category-title">
+                    <span class="category-icon">❓</span> Other Cookies
+                    <small style="font-weight: normal; color: #666;">(Miscellaneous purposes)</small>
+                </h3>
+                <table class="cookie-table" id="other-cookies-table">
+                    <thead>
+                        <tr>
+                            <th>Cookie Name</th>
+                            <th>Purpose</th>
+                            <th>Duration</th>
+                            <th>Risk Level</th>
+                            <th>Data Collected</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="real-data-section" class="category-section">
+                <div id="root"></div>
+            </div>
+            <div class="privacy-tip">
+                <h3>💡 What can you do?</h3>
+                <ul>
+                    <li>Use your browser's privacy settings to control cookies</li>
+                    <li>Regularly clear cookies you don't need</li>
+                    <li>Consider using private/incognito mode for sensitive browsing</li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -124,6 +275,22 @@
             const url = document.getElementById('url-input').value;
             const errorMessage = document.getElementById('error-message');
             const results = document.getElementById('results');
+            
+            // Basic client-side validation
+            if (!url) {
+                errorMessage.textContent = 'Please enter a website address';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Show loading state
+            errorMessage.style.display = 'none';
+            results.style.display = 'none';
+            document.body.style.cursor = 'wait';
+            
+            // Add a loading message
+            errorMessage.textContent = 'Analyzing website...';
+            errorMessage.style.display = 'block';
             
             fetch('/analyze', {
                 method: 'POST',
@@ -134,6 +301,9 @@
             })
             .then(response => response.json())
             .then(data => {
+                document.body.style.cursor = 'default';
+                errorMessage.style.display = 'none';
+                
                 if (data.error) {
                     errorMessage.textContent = data.error;
                     errorMessage.style.display = 'block';
@@ -141,7 +311,6 @@
                     return;
                 }
                 
-                errorMessage.style.display = 'none';
                 results.style.display = 'block';
                 
                 // Update stats
@@ -150,28 +319,154 @@
                 document.getElementById('medium-risk').textContent = data.stats.medium_risk;
                 document.getElementById('low-risk').textContent = data.stats.low_risk;
                 
-                // Update cookie list
-                const cookieList = document.getElementById('cookie-list');
-                cookieList.innerHTML = '';
+                // Clear all tables
+                document.querySelectorAll('.cookie-table tbody').forEach(tbody => tbody.innerHTML = '');
                 
+                // Display cookies
                 data.cookies.forEach(cookie => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${cookie.name}</td>
-                        <td>${cookie.domain}</td>
-                        <td>${cookie.expires}</td>
-                        <td>${cookie.secure ? 'Yes' : 'No'}</td>
-                        <td class="risk-${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</td>
+                    const tableRow = `
+                        <tr class="risk-${cookie.risk_level.toLowerCase()}">
+                            <td>${cookie.name}</td>
+                            <td><code>${cookie.value}</code></td>
+                            <td>${cookie.purpose}</td>
+                            <td><span class="risk-tag ${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</span></td>
+                            <td>${cookie.data_collected.join('<br>')}</td>
+                        </tr>
                     `;
-                    cookieList.appendChild(row);
+                    
+                    document.querySelector('#marketing-cookies-table tbody').innerHTML += tableRow;
                 });
+                
+                // Show the marketing cookies section
+                document.getElementById('marketing-cookies').style.display = 'block';
             })
             .catch(error => {
-                errorMessage.textContent = 'An error occurred while analyzing the website.';
+                document.body.style.cursor = 'default';
+                errorMessage.textContent = `Error: ${error.message}`;
                 errorMessage.style.display = 'block';
                 results.style.display = 'none';
             });
         }
+
+        function categorizeCookie(name, domain) {
+            // Common patterns for different cookie types
+            const patterns = {
+                essential: [
+                    'csrf', 'session', 'token', 'auth', 'security', 'xsrf',
+                    'cookie_consent', 'gdpr'
+                ],
+                tracking: [
+                    'ga', 'analytics', 'track', 'visitor', '_gid', '_gat',
+                    'utm_', 'pixel', 'beacon'
+                ],
+                marketing: [
+                    'ad', 'campaign', 'promo', 'marketing', 'doubleclick',
+                    'facebook', 'fb', 'twitter', 'linkedin'
+                ]
+            };
+
+            name = name.toLowerCase();
+            
+            for (const [category, terms] of Object.entries(patterns)) {
+                if (terms.some(term => name.includes(term))) {
+                    return category;
+                }
+            }
+            
+            return 'other';
+        }
+
+        function getCookiePurpose(name, domain) {
+            const category = categorizeCookie(name, domain);
+            const purposes = {
+                essential: {
+                    csrf: 'Protects against cyber attacks',
+                    session: 'Keeps you logged in',
+                    token: 'Maintains your secure session',
+                    security: 'Protects your browsing session',
+                    default: 'Helps the website function properly'
+                },
+                tracking: {
+                    ga: 'Tracks how you use the website',
+                    analytics: 'Monitors visitor behavior',
+                    default: 'Monitors your activity on the site'
+                },
+                marketing: {
+                    ad: 'Helps show relevant advertisements',
+                    campaign: 'Tracks marketing effectiveness',
+                    default: 'Used for marketing purposes'
+                },
+                other: {
+                    default: 'Stores website preferences'
+                }
+            };
+
+            const categoryPurposes = purposes[category] || purposes.other;
+            const purpose = Object.entries(categoryPurposes).find(([key]) => 
+                name.includes(key))?.[1] || categoryPurposes.default;
+
+            return {
+                category,
+                purpose,
+                whatItKnows: getWhatItKnows(category, name)
+            };
+        }
+
+        function getWhatItKnows(cookie) {
+            return cookie.data_collected.join('<br>');
+        }
+
+        function getRiskTag(level) {
+            return `<span class="risk-tag ${level.toLowerCase()}">${level}</span>`;
+        }
+    </script>
+
+    <script type="text/babel">
+        const DataExposureViewer = () => {
+            const [userData, setUserData] = React.useState(null);
+            const [loading, setLoading] = React.useState(true);
+          
+            React.useEffect(() => {
+                // Get additional browser data that can only be collected client-side
+                const getBrowserData = () => {
+                    const plugins = [];
+                    for (let i = 0; i < navigator.plugins.length; i++) {
+                        plugins.push(navigator.plugins[i].name);
+                    }
+            
+                    const fonts = [];
+                    const testString = "mmmmmmmmmmlli";
+                    const testSize = "72px";
+                    const baseFont = "monospace";
+                    
+                    const baseFontWidth = getTextWidth(testString, `${testSize} ${baseFont}`);
+                    
+                    ["Arial", "Verdana", "Times New Roman", "Courier New"].forEach(font => {
+                        const width = getTextWidth(testString, `${testSize} ${font}, ${baseFont}`);
+                        if (width !== baseFontWidth) {
+                            fonts.push(font);
+                        }
+                    });
+            
+                    return { plugins, fonts };
+                };
+            
+                const getTextWidth = (text, font) => {
+                    const canvas = document.createElement("canvas");
+                    const context = canvas.getContext("2d");
+                    context.font = font;
+                    return context.measureText(text).width;
+                };
+            
+                // Rest of your component code...
+            }, []);
+
+            // Rest of your component code...
+        };
+
+        // Render script
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(DataExposureViewer));
     </script>
 </body>
 </html>
