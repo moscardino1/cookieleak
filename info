@@ -1,2 +1,7 @@
 source venv/bin/activate
 python app.py
+
+
+
+save the cookie searched in the session and then compare it with other search to see who can reuse what and what's similar with other website
+if they sell the data to each other they can eventually harm you more. 
