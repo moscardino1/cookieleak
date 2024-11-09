@@ -1,20 +1,21 @@
 COOKIE_CATEGORIES = {
     'essential': {
-        'patterns': ['csrf', 'session', 'token', 'auth', 'security', 'xsrf', 'cookie_consent', 'gdpr'],
+        'patterns': ['csrf', 'session', 'token', 'auth', 'security', 'xsrf', 'cookie_consent', 'gdpr', 'login', 'sessionid', 'auth_token'],
         'icon': '🔧',
         'description': 'Required for the website to work'
     },
     'tracking': {
-        'patterns': ['ga', 'analytics', 'track', 'visitor', '_gid', '_gat', 'utm_', 'pixel', 'beacon'],
+        'patterns': ['ga', 'analytics', 'track', 'visitor', '_gid', '_gat', 'utm_', 'pixel', 'beacon', 'click', 'user_id', 'trace', 'tracking'],
         'icon': '👀',
         'description': 'Monitor your behavior'
     },
     'marketing': {
-        'patterns': ['ad', 'campaign', 'promo', 'marketing', 'doubleclick', 'facebook', 'fb', 'twitter', 'linkedin'],
+        'patterns': ['ad', 'campaign', 'promo', 'marketing', 'doubleclick', 'facebook', 'fb', 'twitter', 'linkedin', 'ads', 'adid', 'gclid', 'utm_campaign', 'utm_source'],
         'icon': '🎯',
         'description': 'Used for advertisements'
     }
 }
+
 
 COOKIE_PURPOSES = {
     'essential': {

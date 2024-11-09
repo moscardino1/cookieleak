@@ -6,6 +6,7 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
     <div class="container">
@@ -16,270 +17,53 @@
         
         <div class="explanation">
             <h3>👋 What is this tool?</h3>
-            <p>This tool helps you understand what information websites collect about you through "cookies" - small pieces of data stored on your computer when you visit websites.</p>
+            <p>This tool helps you understand what information websites collect about you through "cookies".</p>
         </div>
 
         <div class="form-group">
-            <input type="text" id="url-input" placeholder="Type a website address (like example.com)">
+            <input type="text" id="url-input" placeholder="Type a website address (e.g., example.com)" value="www.cnn.com">
             <button onclick="analyzeSite()">Check This Website</button>
         </div>
         
-        <div id="error-message" style="display: none; color: red; background-color: #ffe6e6; padding: 10px; border-radius: 5px; margin: 10px 0;"></div>
+        <div id="error-message" style="display: none; color: red;"></div>
         
         <div id="results" style="display: none;">
             <div class="stats">
                 <div class="stat-box">
                     <h3>📊 Total Cookies Found</h3>
                     <div id="total-cookies" style="font-size: 24px; font-weight: bold;">0</div>
-                    <p>Different pieces of information being collected</p>
                 </div>
                 <div class="stat-box">
                     <h3>🚨 Privacy Concerns</h3>
-                    <div>
-                        <p><span id="high-risk" class="risk-high">0</span> High Risk</p>
-                        <p><span id="medium-risk" class="risk-medium">0</span> Medium Risk</p>
-                        <p><span id="low-risk" class="risk-low">0</span> Low Risk</p>
-                    </div>
+                    <p><span id="high-risk" class="risk-high">0</span> High Risk</p>
+                    <p><span id="medium-risk" class="risk-medium">0</span> Medium Risk</p>
+                    <p><span id="low-risk" class="risk-low">0</span> Low Risk</p>
                 </div>
             </div>
 
-            <!-- Essential Cookies Section -->
-            <div id="essential-cookies" class="category-section">
-                <h3 class="category-title">
-                    <span class="category-icon">🔧</span> Essential Cookies
-                    <small style="font-weight: normal; color: #666;">(Required for the website to work)</small>
-                </h3>
-                <table class="cookie-table" id="essential-cookies-table">
+            <!-- Single Cookies Table -->
+            <div id="cookies-table-section" class="category-section">
+                <h3 class="category-title">🍪 All Cookies</h3>
+                <table class="cookie-table">
                     <thead>
                         <tr>
+                            <th>Category</th>
                             <th>Cookie Name</th>
+                            <th>Value</th>
                             <th>Purpose</th>
-                            <th>Duration</th>
                             <th>Risk Level</th>
-                            <th>Data Collected</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody id="cookies-table-body"></tbody>
                 </table>
+
             </div>
 
-            <!-- Tracking Cookies Section -->
-            <div id="tracking-cookies" class="category-section">
-                <h3 class="category-title">
-                    <span class="category-icon">👀</span> Tracking Cookies
-                    <small style="font-weight: normal; color: #666;">(Monitor your behavior)</small>
-                </h3>
-                <table class="cookie-table" id="tracking-cookies-table">
-                    <thead>
-                        <tr>
-                            <th>Cookie Name</th>
-                            <th>Purpose</th>
-                            <th>Duration</th>
-                            <th>Risk Level</th>
-                            <th>Data Collected</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-
-            <!-- Marketing Cookies Section -->
-            <div id="marketing-cookies" class="category-section">
-                <h3 class="category-title">
-                    <span class="category-icon">🎯</span> Marketing Cookies
-                    <small style="font-weight: normal; color: #666;">(Used for advertisements)</small>
-                </h3>
-                <table class="cookie-table" id="marketing-cookies-table">
-                    <thead>
-                        <tr>
-                            <th>Cookie Name</th>
-                            <th>Actual Value</th>
-                            <th>Purpose</th>
-                            <th>Risk Level</th>
-                            <th>Data Analysis</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-
-            <!-- Other Cookies Section -->
-            <div id="other-cookies" class="category-section">
-                <h3 class="category-title">
-                    <span class="category-icon">❓</span> Other Cookies
-                    <small style="font-weight: normal; color: #666;">(Miscellaneous purposes)</small>
-                </h3>
-                <table class="cookie-table" id="other-cookies-table">
-                    <thead>
-                        <tr>
-                            <th>Cookie Name</th>
-                            <th>Purpose</th>
-                            <th>Duration</th>
-                            <th>Risk Level</th>
-                            <th>Data Collected</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div id="real-data-section" class="category-section">
-                <div id="root"></div>
-            </div>
-            <div class="privacy-tip">
-                <h3>💡 What can you do?</h3>
-                <ul>
-                    <li>Use your browser's privacy settings to control cookies</li>
-                    <li>Regularly clear cookies you don't need</li>
-                    <li>Consider using private/incognito mode for sensitive browsing</li>
-                </ul>
-            </div>
         </div>
+
     </div>
-
-    <script>
-        function analyzeSite() {
-            const url = document.getElementById('url-input').value;
-            const errorMessage = document.getElementById('error-message');
-            const results = document.getElementById('results');
-            
-            // Basic client-side validation
-            if (!url) {
-                errorMessage.textContent = 'Please enter a website address';
-                errorMessage.style.display = 'block';
-                return;
-            }
-            
-            // Show loading state
-            errorMessage.style.display = 'none';
-            results.style.display = 'none';
-            document.body.style.cursor = 'wait';
-            
-            // Add a loading message
-            errorMessage.textContent = 'Analyzing website...';
-            errorMessage.style.display = 'block';
-            
-            fetch('/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `url=${encodeURIComponent(url)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.body.style.cursor = 'default';
-                errorMessage.style.display = 'none';
-                
-                if (data.error) {
-                    errorMessage.textContent = data.error;
-                    errorMessage.style.display = 'block';
-                    results.style.display = 'none';
-                    return;
-                }
-                
-                results.style.display = 'block';
-                
-                displayCookies(data);
-            })
-            .catch(error => {
-                document.body.style.cursor = 'default';
-                errorMessage.textContent = `Error: ${error.message}`;
-                errorMessage.style.display = 'block';
-                results.style.display = 'none';
-            });
-        }
-
-        function displayCookies(data) {
-            // Update stats
-            document.getElementById('total-cookies').textContent = data.stats.total_cookies;
-            document.getElementById('high-risk').textContent = data.stats.high_risk;
-            document.getElementById('medium-risk').textContent = data.stats.medium_risk;
-            document.getElementById('low-risk').textContent = data.stats.low_risk;
-            
-            // Clear all tables
-            document.querySelectorAll('.cookie-table tbody').forEach(tbody => tbody.innerHTML = '');
-            
-            // Display cookies by category
-            Object.entries(data.cookies).forEach(([category, cookies]) => {
-                const categoryInfo = data.categories[category] || {
-                    icon: '❓',
-                    description: 'Miscellaneous purposes'
-                };
-                
-                const sectionId = `${category}-cookies`;
-                const section = document.getElementById(sectionId);
-                
-                if (cookies.length > 0) {
-                    section.style.display = 'block';
-                    const tbody = section.querySelector('tbody');
-                    
-                    cookies.forEach(cookie => {
-                        const row = `
-                            <tr class="risk-${cookie.risk_level.toLowerCase()}">
-                                <td>${cookie.name}</td>
-                                <td><code>${cookie.value}</code></td>
-                                <td>${cookie.purpose}</td>
-                                <td><span class="risk-tag ${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</span></td>
-                                <td>${cookie.data_collected.join('<br>')}</td>
-                            </tr>
-                        `;
-                        tbody.innerHTML += row;
-                    });
-                } else {
-                    section.style.display = 'none';
-                }
-            });
-        }
-
-        function getRiskTag(level) {
-            return `<span class="risk-tag ${level.toLowerCase()}">${level}</span>`;
-        }
-    </script>
-
-    <script type="text/babel">
-        const DataExposureViewer = () => {
-            const [userData, setUserData] = React.useState(null);
-            const [loading, setLoading] = React.useState(true);
-          
-            React.useEffect(() => {
-                // Get additional browser data that can only be collected client-side
-                const getBrowserData = () => {
-                    const plugins = [];
-                    for (let i = 0; i < navigator.plugins.length; i++) {
-                        plugins.push(navigator.plugins[i].name);
-                    }
-            
-                    const fonts = [];
-                    const testString = "mmmmmmmmmmlli";
-                    const testSize = "72px";
-                    const baseFont = "monospace";
-                    
-                    const baseFontWidth = getTextWidth(testString, `${testSize} ${baseFont}`);
-                    
-                    ["Arial", "Verdana", "Times New Roman", "Courier New"].forEach(font => {
-                        const width = getTextWidth(testString, `${testSize} ${font}, ${baseFont}`);
-                        if (width !== baseFontWidth) {
-                            fonts.push(font);
-                        }
-                    });
-            
-                    return { plugins, fonts };
-                };
-            
-                const getTextWidth = (text, font) => {
-                    const canvas = document.createElement("canvas");
-                    const context = canvas.getContext("2d");
-                    context.font = font;
-                    return context.measureText(text).width;
-                };
-            
-             }, []);
-
-         };
-
-        // Render script
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(DataExposureViewer));
-    </script>
+    
 </body>
+
 </html>
+
