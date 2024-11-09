@@ -70,3 +70,5 @@ function displayCookies(data) {
         tableBody.innerHTML += row;
     });
 }
+
+ 

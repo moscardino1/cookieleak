@@ -3,10 +3,10 @@
     --bg-primary: #0a0a0f;
     --bg-secondary: #13131a;
     --bg-card: #1a1a23;
-    --accent: #0ff4c6;
-    --accent-glow: rgba(15, 244, 198, 0.15);
+    --accent: #0ff4c6; /* Neon Cyan */
+    --accent-glow: rgba(15, 244, 198, 0.5); /* Brighter glow */
     --text-primary: #e2e2e4;
-    --text-secondary: #8f8f9d;
+    --text-secondary: #ff77ff; /* Neon Magenta */
     --border: #2a2a35;
     --danger: #ff4365;
     --warning: #ffb800;
@@ -30,6 +30,16 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     line-height: 1.6;
+    animation: backgroundAnimation 10s infinite alternate; /* Background animation */
+}
+
+@keyframes backgroundAnimation {
+    0% {
+        background-color: #0a0a0f;
+    }
+    100% {
+        background-color: #13131a; /* Subtle color change */
+    }
 }
 
 .container {
@@ -45,18 +55,18 @@ body {
 }
 
 .header h1 {
-    font-size: 3.5rem;
+    font-size: 3rem; /* Adjusted font size */
     font-weight: 800;
     letter-spacing: -1px;
     margin-bottom: 0.5rem;
     background: linear-gradient(to right, var(--accent), #80ffea);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 20px var(--accent-glow);
+    text-shadow: 0 0 20px var(--accent-glow), 0 0 30px var(--text-secondary); /* Added glow */
 }
 
 .header h2 {
-    font-size: 1.25rem;
+    font-size: 1.5rem; /* Adjusted font size */
     color: var(--text-secondary);
     font-weight: 400;
 }
@@ -70,6 +80,7 @@ body {
     padding: 1.5rem;
     border-radius: 8px;
     border: 1px solid var(--border);
+    box-shadow: 0 0 10px var(--accent-glow); /* Glow effect */
 }
 
 input[type="text"] {
@@ -79,7 +90,7 @@ input[type="text"] {
     color: var(--text-primary);
     padding: 0.875rem 1rem;
     border-radius: 4px;
-    font-size: 0.875rem;
+    font-size: 1rem; /* Adjusted font size */
     transition: all 0.2s ease;
 }
 
@@ -96,16 +107,17 @@ button {
     padding: 0.875rem 1.5rem;
     border-radius: 4px;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 1rem; /* Adjusted font size */
     cursor: pointer;
     transition: all 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    box-shadow: 0 0 10px var(--accent-glow); /* Glow effect */
 }
 
 button:hover {
     background: #00ddb1;
-    box-shadow: 0 0 15px var(--accent-glow);
+    box-shadow: 0 0 20px var(--accent-glow), 0 0 30px var(--text-secondary); /* Enhanced glow */
     transform: translateY(-1px);
 }
 
@@ -124,6 +136,7 @@ button:hover {
     padding: 1.5rem;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 10px var(--accent-glow); /* Glow effect */
 }
 
 .stat-box::before {
@@ -139,7 +152,7 @@ button:hover {
 
 .stat-box h3 {
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 1rem; /* Adjusted font size */
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -158,12 +171,13 @@ button:hover {
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 0 10px var(--accent-glow); /* Glow effect */
 }
 
 .category-title {
     padding: 1.5rem;
     border-bottom: 1px solid var(--border);
-    font-size: 1rem;
+    font-size: 1rem; /* Adjusted font size */
     color: var(--text-primary);
     font-weight: 600;
 }
@@ -177,7 +191,7 @@ button:hover {
     background: var(--bg-card);
     padding: 1rem;
     text-align: left;
-    font-size: 0.75rem;
+    font-size: 0.875rem; /* Adjusted font size */
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
@@ -187,18 +201,17 @@ button:hover {
 .cookie-table td {
     padding: 1rem;
     border-bottom: 1px solid var(--border);
-    font-size: 0.875rem;
+    font-size: 0.875rem; /* Adjusted font size */
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
     word-wrap: break-word;
     max-width: 200px;
+    transition: background 0.3s ease; /* Smooth transition */
 }
 
 .cookie-table td:hover {
-    white-space: normal;
-    overflow: visible;
-    background: var(--bg-card);
+    background: rgba(15, 244, 198, 0.1); /* Light hover effect */
     position: relative;
     z-index: 1;
 }
@@ -206,7 +219,7 @@ button:hover {
 /* Code values in table */
 .cookie-table code {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
+    font-size: 0.8125rem; /* Adjusted font size */
     color: var(--accent);
     background: var(--bg-card);
     padding: 0.25rem 0.5rem;
@@ -219,7 +232,7 @@ button:hover {
 
 /* Risk Tags */
 .risk-tag {
-    font-size: 0.75rem;
+    font-size: 0.75rem; /* Adjusted font size */
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     font-weight: 600;
@@ -262,7 +275,7 @@ button:hover {
     }
     
     .header h1 {
-        font-size: 2rem;
+        font-size: 2rem; /* Adjusted font size */
     }
     
     .form-group {
@@ -328,4 +341,13 @@ button:hover {
 /* Table Row Hover Effect */
 .cookie-table tr:hover td {
     background: var(--bg-card);
+}
+
+#particles-js {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1; /* Ensure it stays behind other content */
 }
