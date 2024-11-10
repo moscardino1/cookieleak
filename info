@@ -1,2 +1,20 @@
+cd cookieleak
 source venv/bin/activate
 python app.py
+
+to deploy
+    cd cookieleak 
+    vercel deploy
+
+to prod:
+    vercel --prod 
+
+
+python3 -m venv venv
+source venv/bin/activate
+
+ 
+
+python app.py
+pip freeze > requirements.txt
+pip install -r requirements.txt

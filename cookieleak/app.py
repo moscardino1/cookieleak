@@ -2,9 +2,6 @@ from flask import Flask, render_template, request, jsonify
 import json
 import requests
 # Import necessary libraries for headless browsing
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from constants import COOKIE_CATEGORIES, COOKIE_PURPOSES
 app = Flask(__name__)
 
@@ -37,19 +34,15 @@ def analyze():
         url = request.form.get('url', '')
         url = f'https://{url.strip().lower().replace("http://", "").replace("https://", "").split("/")[0]}'
         
-        # Use Selenium to fetch cookies
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')  # Run in headless mode
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        driver.get(url)
-
-        # Get cookies from the browser
-        all_cookies = driver.get_cookies()
+        # Use requests session to maintain cookies
+        session = requests.Session()
+        response = session.get(url, allow_redirects=True)
         cookies_data = []
 
-        for cookie in all_cookies:
-            name = cookie['name']
-            value = cookie['value']
+        # Extract cookies from the response
+        for cookie in session.cookies:
+            name = cookie.name
+            value = cookie.value
             category, icon, description = categorize_cookie(name)
             cookie_info = {
                 'name': name,
@@ -62,8 +55,6 @@ def analyze():
                 'data_collected': analyze_cookie_content(name, value)
             }
             cookies_data.append(cookie_info)
-
-        driver.quit()  # Close the browser
 
         return jsonify({
             'cookies': cookies_data,
