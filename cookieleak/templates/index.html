@@ -1,69 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CookieLeak - What do websites know about you?</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <style>
+        /* Ensure long text in cells wraps correctly */
+        .cookie-table td {
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        .dataTables_wrapper .dataTables_paginate {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>CookieLeak</h1>
-            <h2>What do websites know about you?</h2>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-2">CookieLeak</h1>
+            <h2 class="text-lg md:text-xl text-gray-600">What do websites know about you?</h2>
         </div>
         
-        <div class="explanation">
-            <h3>👋 What is this tool?</h3>
-            <p>This tool helps you understand what information websites collect about you through "cookies".</p>
+        <!-- Info Card -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-2">👋 What is this tool?</h3>
+            <p class="text-gray-600">This tool helps you understand what information websites collect about you through "cookies".</p>
         </div>
 
-        <div class="form-group">
-            <input type="text" id="url-input" placeholder="Type a website address (e.g., example.com)" value="www.cnn.com">
-            <button onclick="analyzeSite()">Check This Website</button>
-        </div>
-        
-        <div id="error-message" style="display: none; color: red;"></div>
-        
-        <div id="results" style="display: none;">
-            <div class="stats">
-                <div class="stat-box">
-                    <h3>📊 Total Cookies Found</h3>
-                    <div id="total-cookies" style="font-size: 24px; font-weight: bold;">0</div>
+        <!-- Search Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <input 
+                        type="text" 
+                        id="url-input" 
+                        placeholder="Type a website address (e.g., example.com)" 
+                        value="www.google.com"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
                 </div>
-                <div class="stat-box">
-                    <h3>🚨 Privacy Concerns</h3>
-                    <p><span id="high-risk" class="risk-high">0</span> High Risk</p>
-                    <p><span id="medium-risk" class="risk-medium">0</span> Medium Risk</p>
-                    <p><span id="low-risk" class="risk-low">0</span> Low Risk</p>
+                <button 
+                    onclick="analyzeSite()" 
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                    Check This Website
+                </button>
+            </div>
+        </div>
+
+        <div id="error-message" class="text-red-500 mb-4 hidden"></div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden space-y-8">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white shadow-md rounded-lg p-6">
+                    <h5 class="text-lg font-semibold mb-2">📊 Total Cookies Found</h5>
+                    <div id="total-cookies" class="text-3xl font-bold text-blue-500">0</div>
+                </div>
+
+                <div class="bg-white shadow-md rounded-lg p-6">
+                    <h5 class="text-lg font-semibold mb-2">🚨 Privacy Concerns</h5>
+                    <div class="space-y-2">
+                        <p class="flex justify-between">
+                            <span>High Risk</span>
+                            <span id="high-risk" class="text-red-500 font-bold">0</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span>Medium Risk</span>
+                            <span id="medium-risk" class="text-yellow-500 font-bold">0</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span>Low Risk</span>
+                            <span id="low-risk" class="text-green-500 font-bold">0</span>
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Single Cookies Table -->
-            <div id="cookies-table-section" class="category-section">
-                <h3 class="category-title">🍪 All Cookies</h3>
-                <table class="cookie-table">
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Cookie Name</th>
-                            <th>Value</th>
-                            <th>Purpose</th>
-                            <th>Risk Level</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cookies-table-body"></tbody>
-                </table>
-
+            <!-- Cookies Table -->
+            <div id="cookies-table-section" class="bg-white shadow-md rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">🍪 All Cookies</h3>
+                <div class="overflow-x-auto">
+                    <table class="cookie-table min-w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Category</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Cookie Name</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Value</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Purpose</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-500">Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cookies-table-body">
+                            <!-- Table rows populated by JavaScript -->
+                        </tbody>
+                    </table>
+                    
+                </div>
             </div>
-
         </div>
-
     </div>
-    
-</body>
 
+    <!-- Load jQuery and DataTables after the body content -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
 </html>
+
 

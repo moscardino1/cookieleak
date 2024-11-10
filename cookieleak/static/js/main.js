@@ -1,3 +1,4 @@
+
 function analyzeSite() {
     const url = document.getElementById('url-input').value;
     const errorMessage = document.getElementById('error-message');
@@ -40,7 +41,6 @@ function analyzeSite() {
     });
 }
 
-
 function displayCookies(data) {
     const tableBody = document.getElementById('cookies-table-body');
     tableBody.innerHTML = ''; // Clear previous rows
@@ -60,15 +60,25 @@ function displayCookies(data) {
     data.cookies.forEach(cookie => {
         const row = `
             <tr class="risk-${cookie.risk_level.toLowerCase()}">
-                <td>${cookie.category_icon} ${cookie.category}</td>
-                <td>${cookie.name}</td>
-                <td><code>${cookie.value}</code></td>
-                <td>${cookie.purpose}</td>
-                <td><span class="risk-tag ${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</span></td>
+                <td title="${cookie.category}">${cookie.category_icon} ${cookie.category}</td>
+                <td title="${cookie.name}">${cookie.name}</td>
+                <td title="${cookie.value}"><code>${cookie.value}</code></td>
+                <td title="${cookie.purpose}">${cookie.purpose}</td>
+                <td title="${cookie.risk_level}"><span class="risk-tag ${cookie.risk_level.toLowerCase()}">${cookie.risk_level}</span></td>
             </tr>
         `;
         tableBody.innerHTML += row;
     });
+    
+
+    // Initialize or re-initialize DataTable
+    if ($.fn.DataTable.isDataTable('.cookie-table')) {
+        // If DataTable is already initialized, clear and redraw
+        $('.cookie-table').DataTable().clear().rows.add($(tableBody).find('tr')).draw();
+    } else {
+        // Initialize DataTable for the first time
+        $('.cookie-table').DataTable();
+    }
+    
 }
 
- 
