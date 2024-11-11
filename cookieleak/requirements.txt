@@ -12,8 +12,10 @@ Jinja2==3.1.4
 MarkupSafe==3.0.2
 outcome==1.3.0.post0
 packaging==24.2
+pillow==11.0.0
 PySocks==1.7.1
 python-dotenv==1.0.1
+qrcode==8.0
 requests==2.32.3
 selenium==4.26.1
 sniffio==1.3.1

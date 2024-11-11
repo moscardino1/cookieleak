@@ -1,11 +1,10 @@
-
 function analyzeSite() {
     const url = document.getElementById('url-input').value;
     const errorMessage = document.getElementById('error-message');
     const results = document.getElementById('results');
 
     if (!url) {
-        errorMessage.textContent = 'Please enter a website address';
+        errorMessage.textContent = 'Please enter at least one website address';
         errorMessage.style.display = 'block';
         return;
     }
@@ -19,7 +18,7 @@ function analyzeSite() {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `url=${encodeURIComponent(url)}`
+        body: `urls=${encodeURIComponent(url)}`
     })
     .then(response => response.json())
     .then(data => {
@@ -60,6 +59,7 @@ function displayCookies(data) {
     data.cookies.forEach(cookie => {
         const row = `
             <tr class="risk-${cookie.risk_level.toLowerCase()}">
+                <td title="${cookie.source}">${cookie.source}</td>
                 <td title="${cookie.category}">${cookie.category_icon} ${cookie.category}</td>
                 <td title="${cookie.name}">${cookie.name}</td>
                 <td title="${cookie.value}"><code>${cookie.value}</code></td>
@@ -70,15 +70,11 @@ function displayCookies(data) {
         tableBody.innerHTML += row;
     });
     
-
     // Initialize or re-initialize DataTable
     if ($.fn.DataTable.isDataTable('.cookie-table')) {
-        // If DataTable is already initialized, clear and redraw
         $('.cookie-table').DataTable().clear().rows.add($(tableBody).find('tr')).draw();
     } else {
-        // Initialize DataTable for the first time
         $('.cookie-table').DataTable();
     }
-    
 }
 

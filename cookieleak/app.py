@@ -1,9 +1,16 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import json
 import requests
-# Import necessary libraries for headless browsing
+import qrcode
+from io import BytesIO
 from constants import COOKIE_CATEGORIES, COOKIE_PURPOSES
+import base64  # Import base64 for encoding
+
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Required for session management
+
+# Your Bitcoin address
+BTC_ADDRESS = "your_bitcoin_address_here"
 
 def categorize_cookie(name):
     """Categorize cookie based on its name"""
@@ -11,7 +18,6 @@ def categorize_cookie(name):
     for category, info in COOKIE_CATEGORIES.items():
         if any(pattern in name for pattern in info['patterns']):
             return category, info['icon'], info['description']
-    # Return a friendly label for cookies that don't match any pattern
     return 'Others', '🔸', 'Miscellaneous purposes'
 
 def analyze_cookie_purpose(name, category):
@@ -31,30 +37,33 @@ def home():
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
-        url = request.form.get('url', '')
-        url = f'https://{url.strip().lower().replace("http://", "").replace("https://", "").split("/")[0]}'
-        
-        # Use requests session to maintain cookies
-        session = requests.Session()
-        response = session.get(url, allow_redirects=True)
+        urls = request.form.get('urls', '').split(',')
         cookies_data = []
 
-        # Extract cookies from the response
-        for cookie in session.cookies:
-            name = cookie.name
-            value = cookie.value
-            category, icon, description = categorize_cookie(name)
-            cookie_info = {
-                'name': name,
-                'value': value,
-                'category': category,
-                'category_icon': icon,
-                'category_description': description,
-                'risk_level': analyze_cookie_risk(name, value),
-                'purpose': analyze_cookie_purpose(name, category),
-                'data_collected': analyze_cookie_content(name, value)
-            }
-            cookies_data.append(cookie_info)
+        for url in urls:
+            url = f'https://{url.strip().lower().replace("http://", "").replace("https://", "").split("/")[0]}'
+            http_session = requests.Session()
+            response = http_session.get(url, allow_redirects=True)
+
+            for cookie in response.cookies:
+                name = cookie.name
+                value = cookie.value
+                category, icon, description = categorize_cookie(name)
+                cookie_info = {
+                    'name': name,
+                    'value': value,
+                    'category': category,
+                    'category_icon': icon,
+                    'category_description': description,
+                    'risk_level': analyze_cookie_risk(name, value),
+                    'purpose': analyze_cookie_purpose(name, category),
+                    'data_collected': analyze_cookie_content(name, value),
+                    'source': url  # Add the source URL for context
+                }
+                cookies_data.append(cookie_info)
+
+        # Store cookies data in Flask's session
+        session['cookies_data'] = cookies_data
 
         return jsonify({
             'cookies': cookies_data,
@@ -98,6 +107,19 @@ def analyze_cookie_content(name, value):
             preview = value[:50] + '...' if len(value) > 50 else value
             collected_data.append(f"Value: {preview}")
     return collected_data
+
+@app.route('/donate')
+def donate():
+    # Generate QR code for the Bitcoin address
+    qr = qrcode.make(BTC_ADDRESS)
+    qr_image = BytesIO()
+    qr.save(qr_image, format='PNG')
+    qr_image.seek(0)
+
+    # Encode the image to base64
+    qr_image_base64 = base64.b64encode(qr_image.getvalue()).decode('utf-8')
+
+    return render_template('donate.html', btc_address=BTC_ADDRESS, qr_image=qr_image_base64)
 
 if __name__ == '__main__':
     app.run(debug=True)
