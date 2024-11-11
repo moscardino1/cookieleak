@@ -4,16 +4,16 @@ import requests
 import qrcode
 from io import BytesIO
 from constants import COOKIE_CATEGORIES, COOKIE_PURPOSES
-import base64  # Import base64 for encoding
+import base64
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Required for session management
+app.secret_key = 'your_secret_key'
 
 # Your USDT address
-USDT_ADDRESS = "0xDC92534Be92780c87f232CD525D99e26892E15f7"  # Update this to your actual USDT address
+USDT_ADDRESS = "0xDC92534Be92780c87f232CD525D99e26892E15f7"
 
 def categorize_cookie(name):
-    """Categorize cookie based on its name"""
+    """Categorize cookie based on its name."""
     name = name.lower()
     for category, info in COOKIE_CATEGORIES.items():
         if any(pattern in name for pattern in info['patterns']):
@@ -21,7 +21,7 @@ def categorize_cookie(name):
     return 'Others', '🔸', 'Miscellaneous purposes'
 
 def analyze_cookie_purpose(name, category):
-    """Get cookie purpose based on its name and category"""
+    """Get cookie purpose based on its name and category."""
     name = name.lower()
     if category in COOKIE_PURPOSES:
         for pattern, purpose in COOKIE_PURPOSES[category].items():
@@ -41,11 +41,31 @@ def analyze():
         cookies_data = []
 
         for url in urls:
-            url = f'https://{url.strip().lower().replace("http://", "").replace("https://", "").split("/")[0]}'
+            base_url = f'https://{url.strip().lower().replace("http://", "").replace("https://", "").split("/")[0]}'
             http_session = requests.Session()
-            response = http_session.get(url, allow_redirects=True)
 
-            for cookie in response.cookies:
+            # Initial request to collect cookies
+            response = http_session.get(base_url, allow_redirects=True)
+
+            # Attempt to trigger additional cookies by simulating browser headers
+            additional_headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Connection': 'keep-alive',
+                'Referer': base_url,
+                'Accept-Encoding': 'gzip, deflate, br',
+                'DNT': '1',
+                'Upgrade-Insecure-Requests': '1'
+            }
+
+            # Request multiple times to attempt to gather more cookies
+            paths_to_try = ['', '/about', '/contact', '/privacy']
+            for path in paths_to_try:
+                response = http_session.get(f"{base_url}{path}", headers=additional_headers, allow_redirects=True)
+
+            # Collect all cookies
+            for cookie in http_session.cookies:
                 name = cookie.name
                 value = cookie.value
                 category, icon, description = categorize_cookie(name)
@@ -58,7 +78,7 @@ def analyze():
                     'risk_level': analyze_cookie_risk(name, value),
                     'purpose': analyze_cookie_purpose(name, category),
                     'data_collected': analyze_cookie_content(name, value),
-                    'source': url  # Add the source URL for context
+                    'source': url
                 }
                 cookies_data.append(cookie_info)
 
