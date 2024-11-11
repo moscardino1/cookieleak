@@ -2,8 +2,9 @@ cd cookieleak
 source venv/bin/activate
 python app.py
 
+to dev test
+    vercel dev
 to deploy
-    cd cookieleak 
     vercel deploy
 
 to prod:

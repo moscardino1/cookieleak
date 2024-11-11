@@ -9,8 +9,8 @@ import base64  # Import base64 for encoding
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for session management
 
-# Your Bitcoin address
-BTC_ADDRESS = "your_bitcoin_address_here"
+# Your USDT address
+USDT_ADDRESS = "0xDC92534Be92780c87f232CD525D99e26892E15f7"  # Update this to your actual USDT address
 
 def categorize_cookie(name):
     """Categorize cookie based on its name"""
@@ -110,8 +110,8 @@ def analyze_cookie_content(name, value):
 
 @app.route('/donate')
 def donate():
-    # Generate QR code for the Bitcoin address
-    qr = qrcode.make(BTC_ADDRESS)
+    # Generate QR code for the USDT address
+    qr = qrcode.make(USDT_ADDRESS)
     qr_image = BytesIO()
     qr.save(qr_image, format='PNG')
     qr_image.seek(0)
@@ -119,7 +119,7 @@ def donate():
     # Encode the image to base64
     qr_image_base64 = base64.b64encode(qr_image.getvalue()).decode('utf-8')
 
-    return render_template('donate.html', btc_address=BTC_ADDRESS, qr_image=qr_image_base64)
+    return render_template('donate.html', usdt_address=USDT_ADDRESS, qr_image=qr_image_base64)
 
 if __name__ == '__main__':
     app.run(debug=True)
