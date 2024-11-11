@@ -13,9 +13,13 @@ COOKIE_CATEGORIES = {
         'patterns': ['ad', 'campaign', 'promo', 'marketing', 'doubleclick', 'facebook', 'fb', 'twitter', 'linkedin', 'ads', 'adid', 'gclid', 'utm_campaign', 'utm_source'],
         'icon': '🎯',
         'description': 'Used for advertisements'
+    },
+    'trackers': {
+        'patterns': ['track', 'tracker', 'analytic', 'id', 'uid', 'guid'],
+        'icon': '🔍',
+        'description': 'Cookies used for tracking users across websites.'
     }
 }
-
 
 COOKIE_PURPOSES = {
     'essential': {
@@ -34,5 +38,8 @@ COOKIE_PURPOSES = {
         'ad': 'Helps show relevant advertisements',
         'campaign': 'Tracks marketing effectiveness',
         'default': 'Used for marketing purposes'
+    },
+    'trackers': {
+        'default': 'Used for tracking user behavior across websites.'
     }
 } 
