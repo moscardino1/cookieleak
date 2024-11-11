@@ -57,15 +57,28 @@
         <div id="error-message" class="text-red-500 mb-4 hidden"></div>
 
         <!-- Results Section -->
+        <!-- Results Section -->
         <div id="results" class="hidden space-y-8">
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-white shadow-md rounded-lg p-6">
+            <!-- Stats Grid with Chart -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+
+
+                <!-- Total Cookies Found -->
+                <div class="bg-white shadow-md rounded-lg p-6 col-span-1 md:col-span-1">
                     <h5 class="text-lg font-semibold mb-2">📊 Total Cookies Found</h5>
                     <div id="total-cookies" class="text-3xl font-bold text-blue-500">0</div>
                 </div>
-
-                <div class="bg-white shadow-md rounded-lg p-6">
+                <!-- Privacy Risk Chart -->
+                <div class="bg-white shadow-md rounded-lg p-6 col-span-1 md:col-span-1 flex justify-center">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4 text-center">📊 Privacy Risk Overview</h3>
+                        <!-- Adjust canvas size with width and height attributes or style -->
+                        <canvas id="riskChart" width="200" height="200"></canvas>
+                    </div>
+                </div>
+                <!-- Privacy Concerns -->
+                <div class="bg-white shadow-md rounded-lg p-6 col-span-1 md:col-span-1">
                     <h5 class="text-lg font-semibold mb-2">🚨 Privacy Concerns</h5>
                     <div class="space-y-2">
                         <p class="flex justify-between">
@@ -84,7 +97,7 @@
                 </div>
             </div>
 
-            <!-- Cookies Table -->
+            <!-- Cookies Table Section -->
             <div id="cookies-table-section" class="bg-white shadow-md rounded-lg p-6">
                 <h3 class="text-lg font-semibold mb-4">🍪 All Cookies</h3>
                 <div class="overflow-x-auto">
@@ -107,6 +120,7 @@
             </div>
         </div>
 
+
         <!-- Donation Section -->
         <div class="bg-yellow-100 p-4 rounded-lg shadow-md text-center mt-8">
             <h3 class="text-xl font-semibold mb-2">💖 Support Us!</h3>
@@ -118,6 +132,8 @@
     </div>
 
     <!-- Load jQuery and DataTables after the body content -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

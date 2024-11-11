@@ -55,7 +55,13 @@ function displayCookies(data) {
         if (a.category > b.category) return 1;
         return 0;
     });
+    const riskCounts = {
+        high: data.stats.high_risk,
+        medium: data.stats.medium_risk,
+        low: data.stats.low_risk
+    };
 
+    updateRiskChart(riskCounts)
     data.cookies.forEach(cookie => {
         const row = `
             <tr class="risk-${cookie.risk_level.toLowerCase()}">
@@ -78,3 +84,32 @@ function displayCookies(data) {
     }
 }
 
+// Global variable to store the chart instance
+let riskChartInstance;
+
+function updateRiskChart(riskCounts) {
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    
+    // Destroy previous chart instance if it exists
+    if (riskChartInstance) {
+        riskChartInstance.destroy();
+    }
+
+    // Create a new chart instance
+    riskChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+            datasets: [{
+                data: [riskCounts.high, riskCounts.medium, riskCounts.low],
+                backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB'],
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+}
